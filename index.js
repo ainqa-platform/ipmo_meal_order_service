@@ -2,7 +2,7 @@
  * NPM Module dependencies.
  */
 const express = require("express");
-const cors = require("cors");
+// const cors = require("cors");
 const axios = require("axios");
 const app = express();
 const open = require("open");
@@ -10,7 +10,7 @@ const bodyParser = require("body-parser");
 require("dotenv").config();
 
 app.use(bodyParser.json());
-app.use(cors());
+// app.use(cors());
 
 ///POST METHOD
 
@@ -136,38 +136,35 @@ app.post("/mealOrderStatusUpdate", async (req, res) => {
     res.status(400).json({ response: "Please check the payload" });
   }
 });
-app.post("/labelPrint", async (req, res) => {
-  if (req.body.ticketId) {
-    try {
-      axios
-        .post(process.env.REACT_APP_GENERATE_PDF, {
-          reportid: process.env.REACT_APP_GENERATE_PDF_REPORTID,
-          inputparams: {
-            "@ticketId": req.body.ticketId,
-          },
-          result: [],
-        })
-        .then((resp1) => {
-          open(resp1.data.downloadUrl, function (err) {
-            if (err) throw err;
-          });
-          res.status(200).json({ response: resp1.data.downloadUrl });
-        })
-
-        .catch((err) =>
-          res
-
-            .status(400)
-
-            .json({ error: true, message: "Please Check the payload" })
-        );
-    } catch (err) {
-      console.error(err);
-    }
-  } else {
-    res.status(400).json({ response: "Please check the payload" });
-  }
-});
+// app.post("/labelPrint", async (req, res) => {
+//   if (req.body.ticketId) {
+//     try {
+//       axios
+//         .post(process.env.REACT_APP_GENERATE_PDF, {
+//           reportid: process.env.REACT_APP_GENERATE_PDF_REPORTID,
+//           inputparams: {
+//             "@ticketId": req.body.ticketId,
+//           },
+//           result: [],
+//         })
+//         .then((resp1) => {
+//           open(resp1.data.downloadUrl, function (err) {
+//             if (err) throw err;
+//           });
+//           res.status(200).json({ response: resp1.data.downloadUrl });
+//         })
+//         .catch((err) =>
+//           res
+//             .status(400)
+//             .json({ error: true, message: "Please Check the payload" })
+//         );
+//     } catch (err) {
+//       console.error(err);
+//     }
+//   } else {
+//     res.status(400).json({ response: "Please check the payload" });
+//   }
+// });
 app.listen(process.env.PORT || 3009, function () {
   console.log(
     "Express server listening on port %d in %s mode",
