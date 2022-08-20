@@ -2,7 +2,7 @@
  * NPM Module dependencies.
  */
 const express = require("express");
-const cors = require("cors");
+// const cors = require("cors");
 const axios = require("axios");
 const app = express();
 const bodyParser = require("body-parser");
@@ -10,7 +10,7 @@ const open = require("open");
 require("dotenv").config();
 
 app.use(bodyParser.json());
-app.use(cors());
+// app.use(cors());
 
 ///POST METHOD
 
