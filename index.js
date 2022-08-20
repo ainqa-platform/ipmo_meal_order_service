@@ -160,7 +160,7 @@ app.post("/labelPrint", async (req, res) => {
     res.status(400).json({ response: "Please check the payload" });
   }
 });
-app.listen(process.env.PORT || 3008, function () {
+app.listen(process.env.PORT || 3009, function () {
   console.log(
     "Express server listening on port %d in %s mode",
     this.address().port,
