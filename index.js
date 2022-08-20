@@ -6,6 +6,7 @@ const cors = require("cors");
 const axios = require("axios");
 const app = express();
 const bodyParser = require("body-parser");
+const open = require("open");
 require("dotenv").config();
 
 app.use(bodyParser.json());
@@ -159,7 +160,7 @@ app.post("/labelPrint", async (req, res) => {
     res.status(400).json({ response: "Please check the payload" });
   }
 });
-app.listen(process.env.PORT || 3009, function () {
+app.listen(process.env.PORT || 3008, function () {
   console.log(
     "Express server listening on port %d in %s mode",
     this.address().port,
