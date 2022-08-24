@@ -136,34 +136,105 @@ app.post("/mealOrderStatusUpdate", async (req, res) => {
     res.status(400).json({ response: "Please check the payload" });
   }
 });
+// app.post("/labelPrint", async (req, res) => {
+//   if (req.body.ticketId) {
+//     try {
+//       console.log(req.body.ticketId)
+//       axios
+//         .post(process.env.REACT_APP_GENERATE_PDF, {
+//           reportid: process.env.REACT_APP_GENERATE_PDF_REPORTID,
+//           inputparams: {
+            
+//             "@ticketId": req.body.ticketId,
+//           },
+//           result: [],
+//         })
+//         .then((resp1) => {
+//           //open(resp1.data.downloadUrl, function (err) {
+//             // if (err) throw err;
+//           // });
+//           res.status(200).json({ response: resp1.data.downloadUrl });
+//         })
+//         .catch((err) =>
+
+//           res
+//             .status(400)
+//             .json({ error: true, message: err})
+            
+//         );
+//     } catch (err) {
+//       console.error(err);
+//     }
+//   } else {
+//     res.status(400).json({ response: "Please check the payload" });
+//   }
+// });
 app.post("/labelPrint", async (req, res) => {
+
   if (req.body.ticketId) {
+
     try {
+
+      var data = JSON.stringify({
+
+        "reportid": "229cdea8-07ed-4677-b3ca-aae95e435d6b",
+        "inputparams": {
+          "@ticketId": req.body.ticketId
+        },
+        "result": []
+      });
+
+      
+      var config = {
+
+        method: 'post',
+
+        url: process.env.REACT_APP_GENERATE_PDF,
+
+        headers: {
+
+        'Content-Type': 'application/json'
+
+        },
+
+        data
+
+};
+
+  console.log(config)
       axios
-        .post(process.env.REACT_APP_GENERATE_PDF, {
-          reportid: process.env.REACT_APP_GENERATE_PDF_REPORTID,
-          inputparams: {
-            "@ticketId": req.body.ticketId,
-          },
-          result: [],
-        })
+
+        (config)
+
         .then((resp1) => {
-          open(resp1.data.downloadUrl, function (err) {
-            if (err) throw err;
-          });
+          console.log(resp1)
+
           res.status(200).json({ response: resp1.data.downloadUrl });
+
         })
+
         .catch((err) =>
+
           res
+
             .status(400)
-            .json({ error: true, message: "Please Check the payload" })
+
+            .json({ error: true, message: err })
+
         );
+
     } catch (err) {
+
       console.error(err);
+
     }
+
   } else {
+
     res.status(400).json({ response: "Please check the payload" });
+
   }
+
 });
 app.listen(process.env.PORT || 3009, function () {
   console.log(
