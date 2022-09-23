@@ -265,7 +265,7 @@ app.post("/notificationUpsert", async (req, res) => {
             var bedNo =  mealresponse.data.result[0].BedCode;
             var dietType = mealresponse.data.result[0].PatientCategory.display;
             var mealType = mealresponse.data.result[0].OrderOtherDetails;
-            notificationMsg = "Order Received for " + mealType + "for the diet type of " + dietType +" to "+ roomNo +", "+ bedNo ;
+            notificationMsg = "Order Received for " + mealType + " in the diet type of " + dietType +" for "+ roomNo +", "+ bedNo ;
             chkMealOrder = req.body.mealorderid;
             notifyUpsert(chkMealOrder,notificationMsg);
 
