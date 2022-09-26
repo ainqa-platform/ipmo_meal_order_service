@@ -168,10 +168,10 @@ app.post("/labelPrint", async (req, res) => {
   }
 });
 app.post("/notificationUpsert", async (req, res) => {
-  var notificationMsg = "";  var chkMealOrder = "";
+  var notificationMsg = "";
+  var chkMealOrder = "";
   if (req.body.notify_type) {
-    if(req.body.patient_id)
-    {
+    if (req.body.patient_id) {
       const notifyUpsert = (mealordervalue, notificationmsgvalue) => {
         var config = {
           method: "POST",
@@ -186,28 +186,27 @@ app.post("/notificationUpsert", async (req, res) => {
               // metadataId: process.env.REACT_APP_METADATAID,
               // metadata_dbname: process.env.REACT_APP_MetadataDB_Name,
               doc: {
-                Notification_id : uuid.v4(),
-                Notification : notificationmsgvalue,
-                Notification_type : req.body.notify_type,
-                Notification_count : 0,
-                Patient_id : req.body.patient_id,
-                Mealorderid : mealordervalue
+                Notification_id: uuid.v4(),
+                Notification: notificationmsgvalue,
+                Notification_type: req.body.notify_type,
+                Notification_count: 0,
+                Patient_id: req.body.patient_id,
+                Mealorderid: mealordervalue,
               },
             },
           ],
         };
 
         axios(config)
-        .then(function (response) {
-          return res.status(200).json({ response: response.data })
-        })
-        .catch(function (error) {
-          console.error(error);
-        });
-      }
+          .then(function (response) {
+            return res.status(200).json({ response: response.data });
+          })
+          .catch(function (error) {
+            console.error(error);
+          });
+      };
       try {
-        if(req.body.notify_type == "Patient")
-        {
+        if (req.body.notify_type == "Patient") {
           var patientConfig = {
             method: "POST",
             url: process.env.REACT_APP_ARANGO_URL_READ,
@@ -216,32 +215,46 @@ app.post("/notificationUpsert", async (req, res) => {
               db_name: process.env.REACT_APP_DB,
               entity: "Patient,PatientCheckIn",
               filter: {
-                "Patient": `Patient._id =='${req.body.patient_id}' AND Patient.activestatus==true`,
-                "PatientCheckIn": "PatientCheckIn.PatientCode==Patient._id AND PatientCheckIn.activestatus==true"
+                Patient: `Patient._id =='${req.body.patient_id}' AND Patient.activestatus==true`,
+                PatientCheckIn:
+                  "PatientCheckIn.PatientCode==Patient._id AND PatientCheckIn.activestatus==true",
               },
-              return_fields:  " MERGE(Patient,{ BedCode: PatientCheckIn.BedCode, RoomCode:PatientCheckIn.roomCode, PatientCategory:DOCUMENT(Patient.PatientCategory)  })",
+              return_fields:
+                "MERGE(Patient,{ BedCode: document(PatientCheckIn.BedCode).BedNumber, RoomCode:document(PatientCheckIn.roomCode).RoomNumber, PatientCategory:DOCUMENT(Patient.PatientCategory)  })",
             },
           };
 
           axios(patientConfig)
-          .then(function (patientresponse) {
-            var patientFullName = patientresponse.data.result[0].PatientFName + " " + patientresponse.data.result[0].PatientMName + " " +patientresponse.data.result[0].PatientLName;
-            var roomNo = patientresponse.data.result[0].RoomCode;
-            var bedNo =  patientresponse.data.result[0].BedCode;
-            var dietType = patientresponse.data.result[0].PatientCategory.display;
-            
-            notificationMsg += "Patient " + patientFullName + " checked in the " + roomNo +", "+  bedNo + " for the " + dietType + " diet type";
-            chkMealOrder = "NA";
-            notifyUpsert(chkMealOrder,notificationMsg);
-            
-          })
-          .catch(function (error) {
-            console.error(error);
-          });
-           
-        } else if(req.body.notify_type == "Meal Order")
-        {
-          if(req.body.mealorderid) {
+            .then(function (patientresponse) {
+              var patientFullName =
+                patientresponse.data.result[0].PatientFName +
+                " " +
+                patientresponse.data.result[0].PatientMName +
+                " " +
+                patientresponse.data.result[0].PatientLName;
+              var roomNo = patientresponse.data.result[0].RoomCode;
+              var bedNo = patientresponse.data.result[0].BedCode;
+              var dietType =
+                patientresponse.data.result[0].PatientCategory.display;
+
+              notificationMsg +=
+                "Patient " +
+                patientFullName +
+                " checked in the " +
+                roomNo +
+                ", " +
+                bedNo +
+                " for the " +
+                dietType +
+                " diet type";
+              chkMealOrder = "NA";
+              notifyUpsert(chkMealOrder, notificationMsg);
+            })
+            .catch(function (error) {
+              console.error(error);
+            });
+        } else if (req.body.notify_type == "Meal Order") {
+          if (req.body.mealorderid) {
             var mealorderConfig = {
               method: "POST",
               url: process.env.REACT_APP_ARANGO_URL_READ,
@@ -249,46 +262,58 @@ app.post("/notificationUpsert", async (req, res) => {
               data: {
                 db_name: process.env.REACT_APP_DB,
                 entity: "MealOrder,Patient,PatientCheckIn",
-              
+
                 filter: {
-                  "MealOrder": `MealOrder._id == '${req.body.mealorderid}'  AND MealOrder.activestatus==true AND MealOrder.PatientCode == '${req.body.patient_id}'`,
-                  "Patient": "Patient._id==MealOrder.PatientCode  AND Patient.activestatus==true",
-                  "PatientCheckIn":  "PatientCheckIn.PatientCode==Patient._id AND PatientCheckIn.activestatus==true"
+                  MealOrder: `MealOrder._id == '${req.body.mealorderid}'  AND MealOrder.activestatus==true AND MealOrder.PatientCode == '${req.body.patient_id}'`,
+                  Patient:
+                    "Patient._id==MealOrder.PatientCode  AND Patient.activestatus==true",
+                  PatientCheckIn:
+                    "PatientCheckIn.PatientCode==Patient._id AND PatientCheckIn.activestatus==true",
                 },
-                return_fields:"MERGE(MealOrder,{ PatientCategory:DOCUMENT(Patient.PatientCategory),  BedCode: PatientCheckIn.BedCode, RoomCode:PatientCheckIn.roomCode})" ,
+                return_fields:
+                  "MERGE(MealOrder,{ PatientCategory:DOCUMENT(Patient.PatientCategory),  BedCode: document(PatientCheckIn.BedCode).BedNumber, RoomCode:document(PatientCheckIn.roomCode).RoomNumber})",
               },
             };
 
             axios(mealorderConfig)
-          .then(function (mealresponse) {
-            var roomNo = mealresponse.data.result[0].RoomCode;
-            var bedNo =  mealresponse.data.result[0].BedCode;
-            var dietType = mealresponse.data.result[0].PatientCategory.display;
-            var mealType = mealresponse.data.result[0].OrderOtherDetails;
-            notificationMsg = "Order Received for " + mealType + " in the diet type of " + dietType +" for "+ roomNo +", "+ bedNo ;
-            chkMealOrder = req.body.mealorderid;
-            notifyUpsert(chkMealOrder,notificationMsg);
-
-          })
-          .catch(function (error) {
-            console.error(error);
-          }); 
-          }
-          else {
-            res.status(400).json({ response: "Meal order id is missing, please check the payload" });
+              .then(function (mealresponse) {
+                var roomNo = mealresponse.data.result[0].RoomCode;
+                var bedNo = mealresponse.data.result[0].BedCode;
+                var dietType =
+                  mealresponse.data.result[0].PatientCategory.display;
+                var mealType = mealresponse.data.result[0].OrderOtherDetails;
+                notificationMsg =
+                  "Order Received for " +
+                  mealType +
+                  " in the diet type of " +
+                  dietType +
+                  " for " +
+                  roomNo +
+                  ", " +
+                  bedNo;
+                chkMealOrder = req.body.mealorderid;
+                notifyUpsert(chkMealOrder, notificationMsg);
+              })
+              .catch(function (error) {
+                console.error(error);
+              });
+          } else {
+            res.status(400).json({
+              response: "Meal order id is missing, please check the payload",
+            });
           }
         }
       } catch (err) {
         console.error(err);
       }
-    }
-    else {
-      res.status(400).json({ response: "Patient id is missing, please check the payload" });
+    } else {
+      res
+        .status(400)
+        .json({ response: "Patient id is missing, please check the payload" });
     }
   } else {
     res.status(400).json({ response: "Please check the payload" });
   }
-  
 });
 app.listen(process.env.PORT || 3009, function () {
   console.log(
