@@ -145,21 +145,21 @@ app.post("/labelPrint", async (req, res) => {
         .post(process.env.REACT_APP_GENERATE_PDF, {
           reportid: process.env.REACT_APP_GENERATE_PDF_REPORTID,
           inputparams: {
-            "@ticketId": req.body.ticketId,
+            "@ticketId": `['${req.body.ticketId}']`,
           },
           result: [],
         })
         .then((resp1) => {
-          open(resp1.data.downloadUrl, function (err) {
-            if (err) throw err;
-          });
           res.status(200).json({ response: resp1.data.downloadUrl });
         })
-        .catch((err) =>
-          res
-            .status(400)
-            .json({ error: true, message: "Please Check the payload" })
-        );
+        .catch((err) => {
+          res.status(400).json({
+            error: true,
+            message: err.response.data.error
+              ? err.response.data.error
+              : err.response.data,
+          });
+        });
     } catch (err) {
       console.error(err);
     }
