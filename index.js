@@ -140,10 +140,14 @@ app.post("/labelPrint", async (req, res) => {
         .post(process.env.REACT_APP_GENERATE_PDF, {
           reportid: process.env.REACT_APP_GENERATE_PDF_REPORTID,
           inputparams: {
-            "@ticketId": `${req.body.ticketId}`,
+            "@ticketId":
+              req.body.ticketId.length === 1
+                ? `[${req.body.ticketId}]`
+                : `${req.body.ticketId}`,
           },
           result: [],
         })
+
         .then((resp1) => {
           res.status(200).json({ response: resp1.data.downloadUrl });
         })
