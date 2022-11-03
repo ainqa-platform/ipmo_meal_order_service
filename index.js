@@ -82,10 +82,6 @@ app.post("/mealOrderStatusUpdate", async (req, res) => {
       };
       axios(qdmConfig)
         .then((orderS) => {
-          console.log(
-            "first response",
-            orderS.data.result[0].payload.inputDoc.OrderStatus
-          );
           var config = {
             method: "POST",
             url: process.env.REACT_APP_ARANGO_URL_READ,
@@ -116,7 +112,6 @@ app.post("/mealOrderStatusUpdate", async (req, res) => {
                 ],
               })
                 .then((resp1) => {
-                  console.log("second response", resp1.data);
                   res.status(200).json({ response: resp1.data });
                 })
                 .catch((err) =>
@@ -138,27 +133,31 @@ app.post("/mealOrderStatusUpdate", async (req, res) => {
   }
 });
 app.post("/labelPrint", async (req, res) => {
-  if (req.body.ticketId) {
+  if (req.body.ticketId.length !== 0) {
     try {
       axios
         .post(process.env.REACT_APP_GENERATE_PDF, {
           reportid: process.env.REACT_APP_GENERATE_PDF_REPORTID,
           inputparams: {
-            "@ticketId": req.body.ticketId,
+            "@ticketId":
+              req.body.ticketId.length === 1
+                ? `[${req.body.ticketId}]`
+                : `${req.body.ticketId}`,
           },
           result: [],
         })
+
         .then((resp1) => {
-          open(resp1.data.downloadUrl, function (err) {
-            if (err) throw err;
-          });
           res.status(200).json({ response: resp1.data.downloadUrl });
         })
-        .catch((err) =>
-          res
-            .status(400)
-            .json({ error: true, message: "Please Check the payload" })
-        );
+        .catch((err) => {
+          res.status(400).json({
+            error: true,
+            message: err.response.data.error
+              ? err.response.data.error
+              : err.response.data,
+          });
+        });
     } catch (err) {
       console.error(err);
     }
